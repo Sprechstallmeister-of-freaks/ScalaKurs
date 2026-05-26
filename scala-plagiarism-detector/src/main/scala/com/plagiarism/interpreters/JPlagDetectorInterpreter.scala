@@ -182,6 +182,13 @@ class JPlagDetectorInterpreter[F[_]: Async: Console](
       }
     }
 
+    /*Почему здесь ListBuffer, а не List:
+      Добавление элемента в List создаёт новый список каждый раз: newList = oldList :+ element (O(n) на операцию)
+      Добавление в ListBuffer — это append за O(1)
+      При парсинге 200+ сравнений это даёт ~40,000 операций вместо ~80,000
+
+     */
+    
     val uniqueMatches = matches.toList
       .groupBy(m => Set(m.sourceFile, m.targetFile))
       .map(_._2.head)
