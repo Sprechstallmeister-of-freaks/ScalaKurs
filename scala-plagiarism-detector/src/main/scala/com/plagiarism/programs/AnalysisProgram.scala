@@ -21,20 +21,17 @@ class AnalysisProgram[F[_]: Monad: Console](
       _ <- Console[F].println("=" * 60)
       _ <- Console[F].println(s"Source directory: $sourcePath")
 
-      // Validate environment
       valid <- detector.validateEnvironment(jplagPath, sourcePath)
       _ <- valid match {
         case Left(err) => Console[F].println(s"Environment error: ${err.getMessage}")
         case Right(_) => Console[F].println("Environment OK")
       }
 
-      // Run analysis
       result <- valid match {
         case Right(_) => detector.analyzeDirectory(sourcePath, config)
         case Left(err) => (err: PlagiarismError).asLeft[DetectionResult].pure[F]
       }
 
-      // Process results
       _ <- result match {
         case Right(res) =>
           for {
@@ -45,6 +42,21 @@ class AnalysisProgram[F[_]: Monad: Console](
           Console[F].println(s"Analysis failed: ${err.getMessage}")
       }
     } yield ()
+  }
+
+  // Метод для API
+  def runWithResult(
+                     sourcePath: String,
+                     jplagPath: String,
+                     config: DetectionConfig
+                   ): F[Either[PlagiarismError, DetectionResult]] = {
+    for {
+      valid <- detector.validateEnvironment(jplagPath, sourcePath)
+      result <- valid match {
+        case Right(_) => detector.analyzeDirectory(sourcePath, config)
+        case Left(err) => (err: PlagiarismError).asLeft[DetectionResult].pure[F]
+      }
+    } yield result
   }
 
   private def generateReports(

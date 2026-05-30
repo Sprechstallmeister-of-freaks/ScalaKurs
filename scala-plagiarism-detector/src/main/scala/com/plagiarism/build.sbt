@@ -9,15 +9,22 @@ lazy val root = (project in file("."))
     libraryDependencies ++= Seq(
       // Cats Effect 3
       "org.typelevel" %% "cats-effect" % "3.5.4",
+      "org.typelevel" %% "cats-core" % "2.10.0",
 
-      // Cats Tagless Final (правильная версия)
-      "org.typelevel" %% "cats-tagless-macros" % "0.16.1",
-      "org.typelevel" %% "cats-tagless-core" % "0.16.1",
+      // Http4s для API (правильные версии)
+      "org.http4s" %% "http4s-ember-server" % "0.23.27",
+      "org.http4s" %% "http4s-ember-client" % "0.23.27",
+      "org.http4s" %% "http4s-circe" % "0.23.27",
+      "org.http4s" %% "http4s-dsl" % "0.23.27",
 
       // Circe для JSON
       "io.circe" %% "circe-core" % "0.14.7",
       "io.circe" %% "circe-generic" % "0.14.7",
-      "io.circe" %% "circe-parser" % "0.14.7"
+      "io.circe" %% "circe-parser" % "0.14.7",
+
+      // Logging
+      "ch.qos.logback" % "logback-classic" % "1.4.14",
+      "org.typelevel" %% "log4cats-slf4j" % "2.6.0"
     ),
 
     // Подключаем JPlag JAR
@@ -35,25 +42,9 @@ lazy val root = (project in file("."))
       "-deprecation"
     ),
 
-    javaOptions ++= Seq("-Xmx2g")
+    // Добавляем резервные репозитории
+    resolvers ++= Seq(
+      "Maven Central" at "https://repo1.maven.org/maven2/",
+      "Sonatype Releases" at "https://oss.sonatype.org/content/repositories/releases/"
+    )
   )
-
-// Авто-скачивание JPlag
-lazy val downloadJPlag = taskKey[Unit]("Download JPlag JAR")
-downloadJPlag := {
-  import java.net.URL
-  import java.nio.file.{Files, Paths, StandardCopyOption}
-
-  val libDir = baseDirectory.value / "lib"
-  if (!libDir.exists()) libDir.mkdirs()
-
-  val jarFile = libDir / "jplag.jar"
-  if (!jarFile.exists()) {
-    println("Downloading JPlag 4.0.0...")
-    val url = new URL("https://github.com/jplag/JPlag/releases/download/v4.0.0/jplag-4.0.0-jar-with-dependencies.jar")
-    Files.copy(url.openStream(), Paths.get(jarFile.path), StandardCopyOption.REPLACE_EXISTING)
-    println(s"Downloaded to ${jarFile.path}")
-  }
-}
-
-Compile / compile := (Compile / compile).dependsOn(downloadJPlag).value
