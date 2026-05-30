@@ -97,7 +97,7 @@ class JPlagDetectorInterpreter[F[_]: Async: Console](
   }
 
   // ============================================
-  // Рекурсивный поиск всех .scala файлов
+  // Рекурсивный поиск всех .scala файлов (иммутабельно)
   // ============================================
 
   private def findAllScalaFiles(rootPath: String): F[List[File]] = Sync[F].delay {
@@ -168,30 +168,26 @@ class JPlagDetectorInterpreter[F[_]: Async: Console](
     else Left(JPlagExecutionFailed(exitCode, output.toString))
   }
 
+  // ПОЛНОСТЬЮ ИММУТАБЕЛЬНАЯ ВЕРСИЯ parseOutput
   private def parseOutput(output: String, totalFiles: Int, config: DetectionConfig): F[Either[PlagiarismError, DetectionResult]] = Sync[F].delay {
     val pattern = """Comparing ([^\s-]+)-([^\s-]+)\.scala: ([\d.]+)""".r
-    val matches = scala.collection.mutable.ListBuffer[CloneMatch]()
 
-    pattern.findAllMatchIn(output).foreach { m =>
+    // Иммутабельно: используем flatMap + map вместо ListBuffer
+    val matches = pattern.findAllMatchIn(output).toList.flatMap { m =>
       val similarity = m.group(3).toDouble * 100
       val file1 = s"${m.group(1)}.scala"
       val file2 = s"${m.group(2)}.scala"
 
       if (similarity >= config.sensitivity && file1 != file2) {
-        matches += CloneMatch(file1, file2, similarity, detectType(similarity))
-      }
+        Some(CloneMatch(file1, file2, similarity, detectType(similarity)))
+      } else None
     }
 
-    /*Почему здесь ListBuffer, а не List:
-      Добавление элемента в List создаёт новый список каждый раз: newList = oldList :+ element (O(n) на операцию)
-      Добавление в ListBuffer — это append за O(1)
-      При парсинге 200+ сравнений это даёт ~40,000 операций вместо ~80,000
-
-     */
-    
-    val uniqueMatches = matches.toList
+    // Иммутабельное удаление дубликатов (A->B и B->A)
+    val uniqueMatches = matches
       .groupBy(m => Set(m.sourceFile, m.targetFile))
-      .map(_._2.head)
+      .values
+      .map(_.head)
       .toList
 
     val result = DetectionResult(
