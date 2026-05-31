@@ -2,6 +2,10 @@
 <project version="4">
   <component name="ScalaCompilerConfiguration">
     <option name="separateProdTestSources" value="true" />
-    <profile name="sbt 1" modules="scala-plagiarism-detector,scala-plagiarism-detector.main,scala-plagiarism-detector.test" />
+    <profile name="sbt 1" modules="scala-plagiarism-detector" />
+    <profile name="sbt 2" modules="scala-plagiarism-detector.main,scala-plagiarism-detector.test">
+      <option name="deprecationWarnings" value="true" />
+      <option name="featureWarnings" value="true" />
+    </profile>
   </component>
 </project>

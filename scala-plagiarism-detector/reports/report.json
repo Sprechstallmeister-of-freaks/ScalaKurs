@@ -1,20 +1,20 @@
 {
-  "timestamp": 1779837995165,
+  "timestamp": 1780176744784,
   "totalFiles": 20,
   "totalMatches": 12,
   "averageSimilarity": 94.66666666666667,
   "matches": [
     {"source": "T3_Search2.scala.scala", "target": "T3_Search.scala", "similarity": 100.0, "type": "T1/T2 (Structural clone)"},
-    {"source": "T1_Compact.scala.scala", "target": "T1_Normal.scala", "similarity": 100.0, "type": "T1/T2 (Structural clone)"},
+    {"source": "T2_Renamed2.scala.scala", "target": "T2_Original.scala", "similarity": 100.0, "type": "T1/T2 (Structural clone)"},
     {"source": "T1_Spaced.scala.scala", "target": "T1_Compact.scala", "similarity": 100.0, "type": "T1/T2 (Structural clone)"},
-    {"source": "T2_Original.scala.scala", "target": "T2_Renamed.scala", "similarity": 100.0, "type": "T1/T2 (Structural clone)"},
     {"source": "T1_Spaced.scala.scala", "target": "T1_Normal.scala", "similarity": 100.0, "type": "T1/T2 (Structural clone)"},
-    {"source": "T3_BubbleSort.scala.scala", "target": "T3_BubbleSort2.scala", "similarity": 100.0, "type": "T1/T2 (Structural clone)"},
-    {"source": "Unique_Fibonacci.scala.scala", "target": "Unique_Prime.scala", "similarity": 36.0, "type": "T3 (Semantic clone)"},
-    {"source": "Partial1.scala.scala", "target": "Partial2.scala", "similarity": 100.0, "type": "T1/T2 (Structural clone)"},
-    {"source": "Simple2.scala.scala", "target": "Simple1.scala", "similarity": 100.0, "type": "T1/T2 (Structural clone)"},
-    {"source": "T2_Original.scala.scala", "target": "T2_Renamed2.scala", "similarity": 100.0, "type": "T1/T2 (Structural clone)"},
+    {"source": "T2_Renamed.scala.scala", "target": "T2_Original.scala", "similarity": 100.0, "type": "T1/T2 (Structural clone)"},
+    {"source": "Partial2.scala.scala", "target": "Partial1.scala", "similarity": 100.0, "type": "T1/T2 (Structural clone)"},
     {"source": "Complex2.scala.scala", "target": "Complex1.scala", "similarity": 100.0, "type": "T1/T2 (Structural clone)"},
-    {"source": "T2_Renamed.scala.scala", "target": "T2_Renamed2.scala", "similarity": 100.0, "type": "T1/T2 (Structural clone)"}
+    {"source": "T2_Renamed.scala.scala", "target": "T2_Renamed2.scala", "similarity": 100.0, "type": "T1/T2 (Structural clone)"},
+    {"source": "Unique_Prime.scala.scala", "target": "Unique_Fibonacci.scala", "similarity": 36.0, "type": "T3 (Semantic clone)"},
+    {"source": "T3_BubbleSort2.scala.scala", "target": "T3_BubbleSort.scala", "similarity": 100.0, "type": "T1/T2 (Structural clone)"},
+    {"source": "Simple2.scala.scala", "target": "Simple1.scala", "similarity": 100.0, "type": "T1/T2 (Structural clone)"},
+    {"source": "T1_Normal.scala.scala", "target": "T1_Compact.scala", "similarity": 100.0, "type": "T1/T2 (Structural clone)"}
   ]
 }

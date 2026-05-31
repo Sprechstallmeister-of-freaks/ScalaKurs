@@ -8,6 +8,7 @@ import com.plagiarism.programs.AnalysisProgram
 import com.sun.net.httpserver.{HttpExchange, HttpServer}
 import java.net.InetSocketAddress
 import java.nio.charset.StandardCharsets
+import java.io.{BufferedReader, InputStreamReader}
 
 class ApiServer(
                  detector: JPlagDetectorInterpreter[IO],
@@ -18,8 +19,9 @@ class ApiServer(
 
   private val program = new AnalysisProgram[IO](detector, reportGen)
 
-  private def sendResponse(exchange: HttpExchange, statusCode: Int, response: String): Unit = {
+  private def sendResponse(exchange: HttpExchange, statusCode: Int, response: String, contentType: String = "application/json"): Unit = {
     val bytes = response.getBytes(StandardCharsets.UTF_8)
+    exchange.getResponseHeaders.set("Content-Type", s"$contentType; charset=UTF-8")
     exchange.sendResponseHeaders(statusCode, bytes.length)
     val os = exchange.getResponseBody
     os.write(bytes)
@@ -28,8 +30,33 @@ class ApiServer(
 
   private def handleHealth(exchange: HttpExchange): Unit = {
     val response = s"""{"status":"OK","version":"1.0.0","timestamp":${System.currentTimeMillis()}}"""
-    exchange.getResponseHeaders.set("Content-Type", "application/json")
-    sendResponse(exchange, 200, response)
+    sendResponse(exchange, 200, response, "application/json")
+  }
+
+  private def handleWebPage(exchange: HttpExchange): Unit = {
+    try {
+      val htmlContent = readHtmlFromResource()
+      sendResponse(exchange, 200, htmlContent, "text/html")
+    } catch {
+      case e: Exception =>
+        e.printStackTrace()
+        sendResponse(exchange, 500, s"""{"error": "${e.getMessage}"}""", "application/json")
+    }
+  }
+
+  private def readHtmlFromResource(): String = {
+    val stream = getClass.getResourceAsStream("/web/index.html")
+    if (stream == null) {
+      throw new RuntimeException("index.html not found in resources")
+    }
+    val reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))
+    val content = new StringBuilder()
+    var line: String = null
+    while ({ line = reader.readLine(); line != null }) {
+      content.append(line).append("\n")
+    }
+    reader.close()
+    content.toString()
   }
 
   private def handleAnalyze(exchange: HttpExchange, path: String): Unit = {
@@ -58,8 +85,7 @@ class ApiServer(
         s"""{"success":false,"message":"Analysis failed","result":null,"error":"${err.getMessage}"}"""
     }
 
-    exchange.getResponseHeaders.set("Content-Type", "application/json")
-    sendResponse(exchange, 200, response)
+    sendResponse(exchange, 200, response, "application/json")
   }
 
   private def parseJsonParams(body: String): Map[String, String] = {
@@ -92,18 +118,19 @@ class ApiServer(
     try {
       (method, path) match {
         case ("GET", "/api/health") => handleHealth(exchange)
+        case ("GET", "/") => handleWebPage(exchange)
+        case ("GET", "/index.html") => handleWebPage(exchange)
         case ("GET", p) if p.startsWith("/api/analyze/") =>
           val dir = p.substring("/api/analyze/".length)
           handleAnalyze(exchange, dir)
         case ("POST", "/api/analyze") => handleAnalyze(exchange, "")
         case _ =>
-          val response = """{"error":"Not found"}"""
-          sendResponse(exchange, 404, response)
+          sendResponse(exchange, 404, """{"error":"Not found"}""", "application/json")
       }
     } catch {
       case e: Exception =>
         val response = s"""{"error":"${e.getMessage}"}"""
-        sendResponse(exchange, 500, response)
+        sendResponse(exchange, 500, response, "application/json")
     }
   }
 
@@ -113,13 +140,13 @@ class ApiServer(
     server.setExecutor(null)
     server.start()
     println(s"API Server started on http://$host:$port")
+    println(s"Web UI: http://localhost:$port")
     println(s"Health check: http://localhost:$port/api/health")
     println(s"Analyze GET: http://localhost:$port/api/analyze/stats_tests")
-    println(s"Press Ctrl+C to stop")
+    println("Press ENTER to stop...")
   }.void
 
   def waitForShutdown(): IO[Unit] = IO {
-    println("Server running. Press ENTER to stop...")
     scala.io.StdIn.readLine()
   }.void
 }
